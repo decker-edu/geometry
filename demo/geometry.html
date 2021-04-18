@@ -4,12 +4,6 @@
     <meta charset="utf-8" />
     <title>Interactive Geometry Diagrams</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link
-      rel="stylesheet"
-      type="text/css"
-      media="screen"
-      href="../geometry.css"
-    />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/6.6.2/d3.min.js"></script>
     <script>
       MathJax = {
@@ -118,7 +112,7 @@
       import * as g from "../geometry.js";
 
       let surfaceAnchor = g.point(300, 230);
-      let surfaceNormal = g.vector(surfaceAnchor, 0, -200);
+      let surfaceNormal = g.vector(surfaceAnchor, 0, -200, "normal", "arrow");
       let wi = g.point(80, 100, "drag");
       let mwi = g.mirror(surfaceAnchor, wi);
       let projection = g.line(
@@ -154,7 +148,7 @@
       import * as g from "../geometry.js";
 
       let surfaceAnchor = g.point(300, 230, "drag");
-      let surfaceNormal = g.vector(surfaceAnchor, 0, -180);
+      let surfaceNormal = g.vector(surfaceAnchor, 0, -180, "normal", "arrow");
       let wi = g.point(80, 100, "drag");
       let mwi = g.mlabel(g.mirror(surfaceAnchor, wi), "\\mathbf{-d}_i");
       let projection = g.line(
@@ -214,23 +208,28 @@
       g.renderSvg(anchor, 500, 300, g.group(g.line(p, q, "infinite")));
     </script>
 
-    <h1>Coordinate Cross 2</h1>
+    <h1>Coordinate Cross</h1>
     <figure>
-      <div id="coordinate-cross-2"></div>
+      <div id="coordinate-cross"></div>
       <figcaption></figcaption>
     </figure>
     <script type="module">
-      let anchor = document.getElementById("coordinate-cross-2");
+      let anchor = document.getElementById("coordinate-cross");
       import * as g from "../geometry.js";
 
       let p1 = g.point(100, 400);
+      let pn = g.point(100, 400, "drag", "invisible");
       let p2 = g.point(300, 200, "drag");
 
       g.renderSvg(
         anchor,
         1200,
         500,
-        g.group(g.line(p1, p2, "arrow"), g.xycross(p1, 400, 300))
+        g.group(
+          g.line(p1, p2, "dim", "arrow"),
+          g.vector(pn, 100, -150, "normal", "arrow"),
+          g.xycross(p1, 400, 300)
+        )
       );
     </script>
     <!-- Keep the scroll position across reloads. -->

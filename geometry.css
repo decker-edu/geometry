@@ -1,11 +1,6 @@
-:root {
+svg.geometry {
   --stroke-width: 4px;
   --stroke-width-handle: calc(var(--stroke-width) / 2);
-}
-
-#drawing {
-  margin: 0;
-  padding: 0;
 }
 
 svg.geometry {
@@ -16,22 +11,12 @@ svg.geometry {
   user-select: none;
 }
 
-line {
+svg.geometry line {
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
-marker[id="arrow"] {
-  fill: black;
-  stroke: none;
-}
-
-marker[id="vec-arrow"] {
-  fill: darkblue; /* SVG 2: context-fill*/
-  stroke: none;
-}
-
-marker[id="open-arrow"] {
+svg.geometry marker {
   fill: none;
   stroke: black;
   stroke-width: 1;
@@ -39,7 +24,19 @@ marker[id="open-arrow"] {
   stroke-linejoin: round;
 }
 
-circle.handle {
+svg.geometry marker.vector {
+  stroke: black;
+}
+
+svg.geometry marker.normal {
+  stroke: darkblue;
+}
+
+svg.geometry marker.dim {
+  stroke: darkgray;
+}
+
+svg.geometry circle.handle {
   stroke: none;
   stroke-dasharray: "5,5";
   stroke-width: var(--stroke-width-handle);
@@ -47,110 +44,116 @@ circle.handle {
   fill-opacity: 0;
 }
 
-circle.handle:hover {
+svg.geometry circle.handle:hover {
   stroke: gray;
   cursor: grab;
 }
 
-circle.handle:active {
+svg.geometry circle.handle:active {
   stroke: gray;
   stroke-width: var(--stroke-width);
   /* cursor: grab; */
 }
 
-circle.point {
+svg.geometry circle.point {
   stroke: black;
   stroke-width: var(--stroke-width);
   fill: lightgray;
 }
 
-circle.point.computed {
+svg.geometry circle.point.computed {
   stroke: darkred;
 }
 
-circle.point.drag {
+svg.geometry circle.point.drag {
   stroke: darkgreen;
 }
 
-circle.point.red {
+svg.geometry circle.point.invisible {
+  visibility: hidden;
+}
+
+svg.geometry circle.point.red {
   stroke: red;
 }
 
-circle.point.strong {
+svg.geometry circle.point.strong {
   stroke-width: calc(var(--stroke-width) * 1.5);
 }
 
-line.line {
+svg.geometry line.line {
   stroke: black;
   stroke-width: var(--stroke-width);
+  stroke-linecap: round;
 }
 
-line.line.infinite {
+svg.geometry line.line.infinite {
   stroke: black;
   stroke-width: calc(var(--stroke-width) / 2);
   stroke-linecap: round;
   stroke-dasharray: calc(var(--stroke-width) * 2);
 }
 
-line.line.computed {
-  stroke-width: calc(var(--stroke-width) * 1.5);
+svg.geometry line.line.dim {
+  stroke: darkgray;
 }
 
-line.line.emph {
+svg.geometry line.line.computed {
   stroke: darkred;
   stroke-width: calc(var(--stroke-width) * 1.5);
 }
 
-line.vector {
+svg.geometry line.line.emph {
+  stroke: darkorange;
+  stroke-width: calc(var(--stroke-width) * 1.5);
+}
+
+svg.geometry line.line.normal {
   stroke: darkblue;
   stroke-width: var(--stroke-width);
 }
 
-line.vector.computed {
-  stroke-width: calc(var(--stroke-width) * 1.5);
-}
-
-line.xaxis {
-  stroke: red;
-  stroke-width: var(--stroke-width);
-}
-
-line.yaxis {
+svg.geometry line.xaxis {
   stroke: black;
   stroke-width: var(--stroke-width);
 }
 
-path[id].bezier {
+svg.geometry line.yaxis {
+  stroke: black;
+  stroke-width: var(--stroke-width);
+}
+
+svg.geometry path[id].bezier {
   stroke: darkred;
   stroke-width: calc(var(--stroke-width) * 1.5);
   fill: none;
 }
 
-path[id].play {
+svg.geometry path[id].play {
   fill: lightgray;
   stroke: darkgreen;
   stroke-width: var(--stroke-width);
 }
 
-path[id].play:hover {
+svg.geometry path[id].play:hover {
   fill: gray;
 }
 
-path[id].play:active {
+svg.geometry path[id].play:active {
   fill: lightsalmon;
 }
 
-circle[id].circle {
+svg.geometry circle[id].circle {
   stroke: black;
   stroke-width: var(--stroke-width);
   fill: none;
 }
 
-g[id].surface line {
+svg.geometry g[id].surface line {
   stroke: black;
   stroke-width: var(--stroke-width);
 }
 
-g[id].surface rect {
+svg.geometry g[id].surface rect {
   fill: lightgray;
 }

@@ -27,7 +27,7 @@ export {
 import { Clipper } from "./clip.js";
 
 const defaults = {
-  point: { r: 8, opts: [] }, // one of [, "drag", "computed"]
+  point: { r: 6, opts: [] }, // one of [, "drag", "computed"]
   line: {
     opts: [],
   },
@@ -44,7 +44,7 @@ const defaults = {
     opts: ["line"],
   },
   unit: 60,
-  arrow: { w: 6, h: 4 },
+  arrow: { w: 9, h: 7 },
 };
 
 let nextId = 0;
@@ -231,9 +231,13 @@ class Line extends Shape {
         .attr("y1", this.p1.y)
         .attr("x2", this.p2.x)
         .attr("y2", this.p2.y);
-      if (this.opts.includes("arrow")) {
-        line.attr("marker-end", "url(#open-arrow)");
-      }
+    }
+    if (this.opts.includes("arrow")) {
+      if (this.opts.includes("normal"))
+        line.attr("marker-end", "url(#normal-arrow)");
+      else if (this.opts.includes("dim"))
+        line.attr("marker-end", "url(#dim-arrow)");
+      else line.attr("marker-end", "url(#vector-arrow)");
     }
     return line.node();
   }
@@ -291,77 +295,19 @@ function surface(...args) {
   return new Surface(...args);
 }
 
-class Vector extends Shape {
+class Vector extends Line {
   constructor(p, nx, ny, ...opts) {
-    super();
-    this.p = p;
-    this._p = null;
+    super(p, point(p.x + nx, p.y + ny, "invisible"));
     this.nx = nx;
     this.ny = ny;
     this.opts = opts.length == 0 ? defaults.vector.opts : opts;
     this.zIndex = 10;
   }
 
-  get p1() {
-    return this.p;
-  }
-
-  get p2() {
-    if (this._p) {
-      this._p.x = this.p.x + this.nx;
-      this._p.y = this.p.y + this.ny;
-    } else {
-      this._p = point(this.p.x + this.nx, this.p.y + this.ny, "invisible");
-    }
-    return this._p;
-  }
-
   evaluate() {
-    this.complete = this.p.evaluate();
-    if (this._p) {
-      this._p.x = this.p.x + this.nx;
-      this._p.y = this.p.y + this.ny;
-    }
-    return this.complete;
-  }
-
-  flat() {
-    return [...this.p.flat(), ...(this.complete ? [this] : [])];
-  }
-
-  addP2(line) {
-    if (this.opts.includes("arrow")) {
-      let dscr = this.nx * this.nx + this.ny * this.ny;
-      if (dscr > 0) {
-        let l = Math.sqrt(dscr);
-        let nx = (this.nx / l) * (l - defaults.arrow.w);
-        let ny = (this.ny / l) * (l - defaults.arrow.w);
-        line.attr("marker-end", "url(#vec-arrow)");
-        line.attr("x2", this.p.x + nx).attr("y2", this.p.y + ny);
-      } else {
-        line.attr("x2", this.p.x).attr("y2", this.p.y);
-      }
-    } else {
-      line.attr("x2", this.p.x + this.nx).attr("y2", this.p.y + this.ny);
-    }
-  }
-
-  update(element) {
-    let line = d3.select(element).attr("x1", this.p.x).attr("y1", this.p.y);
-    this.addP2(line);
-  }
-
-  svg(w, h) {
-    let classes = this.opts.concat("vector").join(" ");
-    let line = d3
-      .create("svg:line")
-      .attr("id", this.id)
-      .attr("class", classes)
-      .attr("x1", this.p.x)
-      .attr("y1", this.p.y);
-    this.addP2(line);
-
-    return line.node();
+    this.p2.x = this.p1.x + this.nx;
+    this.p2.y = this.p1.y + this.ny;
+    return super.evaluate();
   }
 }
 
@@ -817,11 +763,25 @@ class IsectLineCircle extends Calculated {
     this.circ = circ;
     this.p1 = point(0, 0, "computed");
     this.p1.parent = this;
-    this.n1 = vector(point(0, 0, "invisible"), 0, 0, "computed", "arrow");
+    this.n1 = vector(
+      point(0, 0, "invisible"),
+      0,
+      0,
+      "computed",
+      "arrow",
+      "normal"
+    );
     this.n1.parent = this;
     this.p2 = point(0, 0, "computed");
     this.p2.parent = this;
-    this.n2 = vector(point(0, 0, "invisible"), 0, 0, "computed", "arrow");
+    this.n2 = vector(
+      point(0, 0, "invisible"),
+      0,
+      0,
+      "computed",
+      "arrow",
+      "normal"
+    );
     this.n2.parent = this;
   }
 
@@ -853,7 +813,7 @@ class IsectLineCircle extends Calculated {
       this.p1.complete = true;
       this.p1.move(p1x, p1y);
       this.n1.complete = true;
-      this.n1.p.move(p1x, p1y);
+      this.n1.p1.move(p1x, p1y);
       this.n1.nx = n1x;
       this.n1.ny = n1y;
       // }
@@ -866,7 +826,7 @@ class IsectLineCircle extends Calculated {
       this.p2.complete = true;
       this.p2.move(p2x, p2y);
       this.n2.complete = true;
-      this.n2.p.move(p2x, p2y);
+      this.n2.p1.move(p2x, p2y);
       this.n2.nx = n2x;
       this.n2.ny = n2y;
       // }
@@ -1011,7 +971,7 @@ class XYcross extends Shape {
       .attr("y1", this.p.y)
       .attr("x2", this.p.x + this.w + u2)
       .attr("y2", this.p.y)
-      .attr("marker-end", "url(#arrow)");
+      .attr("marker-end", "url(#normal-arrow)");
     cross
       .append("svg:line")
       .attr("class", "yaxis")
@@ -1019,7 +979,7 @@ class XYcross extends Shape {
       .attr("y1", this.p.y + u2)
       .attr("x2", this.p.x)
       .attr("y2", this.p.y - this.h + u2)
-      .attr("marker-end", "url(#open-arrow)");
+      .attr("marker-end", "url(#normal-arrow)");
     console.log(cross);
     return cross.node();
   }
@@ -1051,6 +1011,20 @@ function clip(max, v) {
   return Math.min(Math.max(0, v), max);
 }
 
+function addArrowMarker(sel, id, cls, mw, mh) {
+  return sel
+    .append("marker")
+    .attr("id", id)
+    .attr("class", cls)
+    .attr("refX", mw - 1)
+    .attr("refY", mh / 2)
+    .attr("markerWidth", mw)
+    .attr("markerHeight", mh)
+    .attr("orient", "auto")
+    .append("path")
+    .attr("d", `M 1 1 L ${mw - 1} ${mh / 2} L 1 ${mh - 1}`);
+}
+
 // Add a SVG element that contains the shared definitions for this document.
 function addDefs(svg) {
   let defs = svg.attr("id", "geometry defs").append("defs");
@@ -1058,36 +1032,9 @@ function addDefs(svg) {
   const mw = defaults.arrow.w;
   const mh = defaults.arrow.h;
 
-  defs
-    .append("marker")
-    .attr("id", "arrow")
-    .attr("refX", mw)
-    .attr("refY", mh / 2)
-    .attr("markerWidth", mw)
-    .attr("markerHeight", mh)
-    .attr("orient", "auto")
-    .append("path")
-    .attr("d", `M 0 0 L ${mw} ${mh / 2} L 0 ${mh}`);
-  defs
-    .append("marker")
-    .attr("id", "vec-arrow")
-    .attr("refX", mw / 2)
-    .attr("refY", mh / 2)
-    .attr("markerWidth", mw)
-    .attr("markerHeight", mh)
-    .attr("orient", "auto")
-    .append("path")
-    .attr("d", `M 0 0 L ${mw} ${mh / 2} L 0 ${mh}`);
-  defs
-    .append("marker")
-    .attr("id", "open-arrow")
-    .attr("refX", mw * 1.5 - 1)
-    .attr("refY", (mh * 1.5) / 2)
-    .attr("markerWidth", mw * 1.5)
-    .attr("markerHeight", mh * 1.5)
-    .attr("orient", "auto")
-    .append("path")
-    .attr("d", `M 1 1 L ${mw * 1.5 - 1} ${(mh * 1.5) / 2} L 1 ${mh * 1.5 - 1}`);
+  addArrowMarker(defs, "vector-arrow", "vector", mw, mh);
+  addArrowMarker(defs, "normal-arrow", "normal", mw, mh);
+  addArrowMarker(defs, "dim-arrow", "dim", mw, mh);
 }
 
 function update(svg, width, height, root) {
@@ -1112,11 +1059,10 @@ function update(svg, width, height, root) {
 }
 
 function renderSvg(...args) {
-  // Delay rendering (the math labels) until MathJax startup is finished
+  // Delay rendering (of the math labels) until MathJax startup is finished
   MathJax.startup.promise
     .then(() => renderSvg_(...args))
     .catch((err) => console.log("MathJax typeset failed: " + err.message));
-  return MathJax.startup.promise;
 }
 
 function renderSvg_(element, width, height, root) {
@@ -1173,3 +1119,11 @@ function renderSvg_(element, width, height, root) {
     update(svg, width, height, root);
   }
 }
+
+// Lastly, inject the CSS
+let base = new URL(import.meta.url);
+base.pathname = base.pathname.split("/").slice(0, -1).join("/");
+let link = document.createElement("link");
+link.href = new URL("geometry.css", base);
+link.rel = "stylesheet";
+document.head.appendChild(link);
