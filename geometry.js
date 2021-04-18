@@ -980,7 +980,6 @@ class XYcross extends Shape {
       .attr("x2", this.p.x)
       .attr("y2", this.p.y - this.h + u2)
       .attr("marker-end", "url(#normal-arrow)");
-    console.log(cross);
     return cross.node();
   }
 }
@@ -1059,6 +1058,11 @@ function update(svg, width, height, root) {
 }
 
 function renderSvg(...args) {
+  // Retry until MathJax is loaded
+  if (!MathJax) {
+    console.log("Waiting for MathJax ...");
+    setTimeout(() => renderSvg(...args), 100);
+  }
   // Delay rendering (of the math labels) until MathJax startup is finished
   MathJax.startup.promise
     .then(() => renderSvg_(...args))
