@@ -24,6 +24,10 @@ svg.geometry marker {
   stroke-linejoin: round;
 }
 
+svg.geometry marker.computed {
+  stroke: darkred;
+}
+
 svg.geometry marker.vector {
   stroke: black;
 }
@@ -46,13 +50,13 @@ svg.geometry circle.handle {
 
 svg.geometry circle.handle:hover {
   stroke: gray;
-  cursor: grab;
+  /* cursor: grab; */
 }
 
 svg.geometry circle.handle:active {
   stroke: gray;
   stroke-width: var(--stroke-width);
-  /* cursor: grab; */
+  /* cursor: default; */
 }
 
 svg.geometry circle.point {
@@ -115,12 +119,12 @@ svg.geometry line.line.normal {
 
 svg.geometry line.xaxis {
   stroke: black;
-  stroke-width: var(--stroke-width);
+  stroke-width: calc(var(--stroke-width) / 2);
 }
 
 svg.geometry line.yaxis {
   stroke: black;
-  stroke-width: var(--stroke-width);
+  stroke-width: calc(var(--stroke-width) / 2);
 }
 
 svg.geometry path[id].bezier {

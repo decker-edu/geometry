@@ -22,9 +22,12 @@ export {
   Point,
   defaults,
   setZoom,
+  withMathJax,
 };
 
 import { Clipper } from "./clip.js";
+
+const debug = true;
 
 const defaults = {
   point: { r: 6, opts: [] }, // one of [, "drag", "computed"]
@@ -237,6 +240,8 @@ class Line extends Shape {
         line.attr("marker-end", "url(#normal-arrow)");
       else if (this.opts.includes("dim"))
         line.attr("marker-end", "url(#dim-arrow)");
+      else if (this.opts.includes("computed"))
+        line.attr("marker-end", "url(#computed-arrow)");
       else line.attr("marker-end", "url(#vector-arrow)");
     }
     return line.node();
@@ -564,7 +569,7 @@ class Label extends Point {
           y: -this.o * 0.81,
         };
       default:
-        return { x: this.o, y: -this.o - this.svgH * this.f };
+        return { x: this.o * 0.81, y: -this.o * 0.81 };
     }
   }
 
@@ -610,6 +615,7 @@ class MathLabel extends Point {
       this.svgW = this.label.width.baseVal.valueInSpecifiedUnits;
       this.svgH = this.label.height.baseVal.valueInSpecifiedUnits;
     } catch (e) {
+      console.log("geometry.js: tex2svg: failed on:", text);
       this.label = d3.create("text").text(this.text).node();
     }
     this.f = 15;
@@ -1031,6 +1037,7 @@ function addDefs(svg) {
   const mw = defaults.arrow.w;
   const mh = defaults.arrow.h;
 
+  addArrowMarker(defs, "computed-arrow", "computed", mw, mh);
   addArrowMarker(defs, "vector-arrow", "vector", mw, mh);
   addArrowMarker(defs, "normal-arrow", "normal", mw, mh);
   addArrowMarker(defs, "dim-arrow", "dim", mw, mh);
@@ -1057,31 +1064,39 @@ function update(svg, width, height, root) {
     );
 }
 
-function renderSvg(...args) {
+function withMathJax(action) {
   // Retry until MathJax is loaded
-  if (!MathJax) {
-    console.log("Waiting for MathJax ...");
-    setTimeout(() => renderSvg(...args), 100);
+  if (
+    !window.MathJax ||
+    !window.MathJax.startup ||
+    !window.MathJax.startup.promise
+  ) {
+    setTimeout(() => withMathJax(action), 100);
+    if (debug) console.log("geometry.js: waiting for MathJax ...");
+  } else {
+    if (debug) console.log("geometry.js: MathJax is loaded.");
+    // Delay rendering (of the math labels) until MathJax startup is really
+    // finished
+    MathJax.startup.promise.then(action()).catch((err) => {
+      if (debug)
+        console.log("geometry.js: withMathJax: action failed: " + err.message);
+    });
   }
-  // Delay rendering (of the math labels) until MathJax startup is finished
-  MathJax.startup.promise
-    .then(() => renderSvg_(...args))
-    .catch((err) => console.log("MathJax typeset failed: " + err.message));
 }
 
-function renderSvg_(element, width, height, root) {
+function renderSvg(element, width, height, root) {
   let svg = d3
     .select(element)
     .append("svg")
     .attr("viewBox", `0 0 ${width} ${height}`)
     .attr("class", "geometry")
     .on("mousemove", function (e) {
-      // console.log("event", e.offsetX, e.offsetY); // log the mouse x,y position
-      // console.log("event", e.clientX, e.clientY); // log the mouse x,y position
-      // console.log("client", this.clientWidth, this.clientHeight);
-      // console.log("client", this.clientLeft, this.clientTop);
-      // console.log("bounding", this.getBoundingClientRect());
-      // console.log("viewbox", this.viewBox.baseVal.width, this.viewBox.baseVal.height);
+      // if (debug)   console.log("event", e.offsetX, e.offsetY); // log the mouse x,y position
+      // if (debug)   console.log("event", e.clientX, e.clientY); // log the mouse x,y position
+      // if (debug)   console.log("client", this.clientWidth, this.clientHeight);
+      // if (debug)   console.log("client", this.clientLeft, this.clientTop);
+      // if (debug)   console.log("bounding", this.getBoundingClientRect());
+      // if (debug)   console.log("viewbox", this.viewBox.baseVal.width, this.viewBox.baseVal.height);
     });
 
   addDefs(svg);
@@ -1126,8 +1141,9 @@ function renderSvg_(element, width, height, root) {
 
 // Lastly, inject the CSS
 let base = new URL(import.meta.url);
-base.pathname = base.pathname.split("/").slice(0, -1).join("/");
+if (debug) console.log("geometry.js: loaded. (base: " + base + ")");
 let link = document.createElement("link");
 link.href = new URL("geometry.css", base);
 link.rel = "stylesheet";
 document.head.appendChild(link);
+if (debug) console.log("geometry.js: injecting: " + link.href);
