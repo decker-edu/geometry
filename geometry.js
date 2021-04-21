@@ -172,7 +172,8 @@ class Line extends Shape {
     this.p1 = p1;
     this.p2 = p2;
     this.opts = opts.length == 0 ? defaults.line.opts : opts;
-    this.zIndex = 10;
+    if (this.opts.includes("infinite")) this.zIndex = 0;
+    else this.zIndex = 10;
   }
 
   get dx() {
@@ -314,6 +315,12 @@ class Vector extends Line {
     this.p2.y = this.p1.y + this.ny;
     return super.evaluate();
   }
+
+  svg(...args) {
+    this.p2.x = this.p1.x + this.nx;
+    this.p2.y = this.p1.y + this.ny;
+    return super.svg(...args);
+  }
 }
 
 function vector(...args) {
@@ -321,22 +328,47 @@ function vector(...args) {
 }
 
 class Circle extends Shape {
-  constructor(c, r, ...opts) {
+  constructor(c, v, ...opts) {
     super();
     this.c = c;
-    this.r = r;
+    if (v instanceof Point) {
+      this.x = v;
+      this.n = vector(this.x, 0, 0, "arrow", "normal");
+    } else {
+      this.r = v;
+    }
+    this.radius();
     this.opts = opts.length == 0 ? defaults.circle.opts : opts;
   }
 
   evaluate() {
-    return (this.complete = this.c.evaluate());
+    if (this.x) {
+      return (this.complete = Shape.all(this.c, this.x));
+    } else {
+      return (this.complete = this.c.evaluate());
+    }
   }
 
   flat() {
-    return [...this.c.flat(), ...(this.complete ? [this] : [])];
+    return [
+      ...this.c.flat(),
+      ...(this.x ? this.x.flat() : []),
+      ...(this.complete ? [this] : []),
+    ];
+  }
+
+  radius() {
+    if (this.x) {
+      let dx = this.x.x - this.c.x;
+      let dy = this.x.y - this.c.y;
+      this.r = Math.sqrt(dx * dx + dy * dy);
+      this.n.nx = (dx / this.r) * defaults.unit * 2;
+      this.n.ny = (dy / this.r) * defaults.unit * 2;
+    }
   }
 
   update(element) {
+    this.radius();
     d3.select(element)
       .attr("cx", this.c.x)
       .attr("cy", this.c.y)
@@ -344,6 +376,7 @@ class Circle extends Shape {
   }
 
   svg(w, h) {
+    this.radius();
     return d3
       .create("svg:circle")
       .attr("id", this.id)
@@ -934,6 +967,13 @@ class XYcross extends Shape {
     this.w = w;
     this.h = h;
     this.opts = opts.length == 0 ? [] : opts;
+    if (this.opts.includes("center")) {
+      this.dx = w / 2;
+      this.dy = h / 2;
+    } else {
+      this.dx = 0;
+      this.dy = 0;
+    }
     this.zIndex = 9;
   }
 
@@ -954,16 +994,16 @@ class XYcross extends Shape {
     let cross = d3.select(element);
     cross
       .select("xaxis")
-      .attr("x1", this.p.x - u2)
+      .attr("x1", this.p.x - this.dx - u2)
       .attr("y1", this.p.y)
-      .attr("x2", this.p.x + this.w + u2)
+      .attr("x2", this.p.x - this.dx + this.w + u2)
       .attr("y2", this.p.y);
     cross
       .select("yaxis")
       .attr("x1", this.p.x)
-      .attr("y1", this.p.y + u2)
+      .attr("y1", this.p.y + this.dy + u2)
       .attr("x2", this.p.x)
-      .attr("y2", this.p.y - this.h + u2);
+      .attr("y2", this.p.y + this.dy - this.h - u2);
   }
 
   svg(w, h) {
@@ -973,18 +1013,18 @@ class XYcross extends Shape {
     cross
       .append("svg:line")
       .attr("class", "xaxis")
-      .attr("x1", this.p.x - u2)
+      .attr("x1", this.p.x - this.dx - u2)
       .attr("y1", this.p.y)
-      .attr("x2", this.p.x + this.w + u2)
+      .attr("x2", this.p.x - this.dx + this.w + u2)
       .attr("y2", this.p.y)
       .attr("marker-end", "url(#normal-arrow)");
     cross
       .append("svg:line")
       .attr("class", "yaxis")
       .attr("x1", this.p.x)
-      .attr("y1", this.p.y + u2)
+      .attr("y1", this.p.y + this.dy + u2)
       .attr("x2", this.p.x)
-      .attr("y2", this.p.y - this.h + u2)
+      .attr("y2", this.p.y + this.dy - this.h - u2)
       .attr("marker-end", "url(#normal-arrow)");
     return cross.node();
   }

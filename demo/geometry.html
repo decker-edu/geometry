@@ -61,6 +61,21 @@
       g.renderSvg(anchor, 600, 400, segment);
     </script>
 
+    <h1>Sphere</h1>
+    <figure>
+      <div id="sphere"></div>
+      <figcaption>Just a sphere</figcaption>
+    </figure>
+    <script type="module">
+      let anchor = document.getElementById("sphere");
+      import * as g from "../geometry.js";
+
+      let c1 = g.circle(g.point(300, 300, "drag"), 200);
+      let c2 = g.circle(g.point(600, 300, "drag"), g.point(500, 300, "drag"));
+      let root = g.group(c1, c2);
+      g.renderSvg(anchor, 1200, 600, root);
+    </script>
+
     <h1>Intersection</h1>
     <figure>
       <div id="intersection"></div>
@@ -228,7 +243,8 @@
         g.group(
           g.line(p1, p2, "dim", "arrow"),
           g.vector(pn, 100, -150, "normal", "arrow"),
-          g.xycross(p1, 400, 300)
+          g.xycross(p1, 400, 300),
+          g.xycross(g.point(800, 200), 400, 300, "center")
         )
       );
     </script>
