@@ -1104,6 +1104,14 @@ function update(svg, width, height, root) {
     );
 }
 
+function revealZoom() {
+  let slides = document.querySelector(".reveal .slides");
+  if (slides) {
+    let slideZoom = slides.style.zoom || 1;
+    setZoom(slideZoom);
+  }
+}
+
 function withMathJax(action) {
   // Retry until MathJax is loaded
   if (
@@ -1121,6 +1129,8 @@ function withMathJax(action) {
       if (debug)
         console.log("geometry.js: withMathJax: action failed: " + err.message);
     });
+    // Also, set zoom if we are running under Reveal.js
+    revealZoom();
   }
 }
 
