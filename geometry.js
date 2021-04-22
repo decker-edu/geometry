@@ -26,6 +26,7 @@ export {
 };
 
 import { Clipper } from "./clip.js";
+import { vec2, len, norm, add, sub, mul, div, dot, perp } from "./vec2.js";
 
 const debug = true;
 
@@ -201,49 +202,38 @@ class Line extends Shape {
     ];
   }
 
+  path(a, b) {
+    let d = norm(sub(b, a));
+    let p = perp(d);
+    let sp = 0.16 * defaults.unit;
+    let sd = -0.4 * defaults.unit;
+    let w1 = add(b, mul(sp, p), mul(sd, d));
+    let w2 = add(b, mul(-sp, p), mul(sd, d));
+    if (this.opts.includes("arrow")) {
+      return `M ${a.x}  ${a.y} L  ${b.x} ${b.y} L ${w1.x} ${w1.y} M ${b.x} ${b.y} L ${w2.x} ${w2.y}`;
+    } else {
+      return `M ${a.x}  ${a.y} L  ${b.x} ${b.y}`;
+    }
+  }
+
   update(element) {
     if (this.c) {
       let [n, xp1, xp2] = this.c.clipLine(this.p1, this.p2);
-      d3.select(element)
-        .attr("x1", xp1.x)
-        .attr("y1", xp1.y)
-        .attr("x2", xp2.x)
-        .attr("y2", xp2.y);
+      d3.select(element).attr("d", this.path(xp1, xp2));
     } else {
-      d3.select(element)
-        .attr("x1", this.p1.x)
-        .attr("y1", this.p1.y)
-        .attr("x2", this.p2.x)
-        .attr("y2", this.p2.y);
+      d3.select(element).attr("d", this.path(this.p1, this.p2));
     }
   }
 
   svg(w, h) {
     let classes = this.opts.concat("line").join(" ");
-    let line = d3.create("svg:line").attr("id", this.id).attr("class", classes);
+    let line = d3.create("svg:path").attr("id", this.id).attr("class", classes);
     if (this.opts.includes("infinite")) {
       this.c = new Clipper({ x: 0, y: 0 }, { x: w, y: h });
       let [n, xp1, xp2] = this.c.clipLine(this.p1, this.p2);
-      line
-        .attr("x1", xp1.x)
-        .attr("y1", xp1.y)
-        .attr("x2", xp2.x)
-        .attr("y2", xp2.y);
+      line.attr("d", this.path(xp1, xp2));
     } else {
-      line
-        .attr("x1", this.p1.x)
-        .attr("y1", this.p1.y)
-        .attr("x2", this.p2.x)
-        .attr("y2", this.p2.y);
-    }
-    if (this.opts.includes("arrow")) {
-      if (this.opts.includes("normal"))
-        line.attr("marker-end", "url(#normal-arrow)");
-      else if (this.opts.includes("dim"))
-        line.attr("marker-end", "url(#dim-arrow)");
-      else if (this.opts.includes("computed"))
-        line.attr("marker-end", "url(#computed-arrow)");
-      else line.attr("marker-end", "url(#vector-arrow)");
+      line.attr("d", this.path(this.p1, this.p2));
     }
     return line.node();
   }
@@ -960,73 +950,32 @@ function project(...args) {
   return new Project(...args);
 }
 
-class XYcross extends Shape {
+class XYcross extends Group {
   constructor(p, w, h, ...opts) {
-    super();
-    this.p = p;
-    this.w = w;
-    this.h = h;
-    this.opts = opts.length == 0 ? [] : opts;
-    if (this.opts.includes("center")) {
-      this.dx = w / 2;
-      this.dy = h / 2;
-    } else {
-      this.dx = 0;
-      this.dy = 0;
+    let u2 = defaults.unit / 2;
+    let dx = 0;
+    let dy = 0;
+    if (opts.includes("center")) {
+      dx = w / 2;
+      dy = h / 2;
     }
-    this.zIndex = 9;
-  }
-
-  evaluate() {
-    this.complete = this.p.evaluate();
-    return this.complete;
-  }
-
-  flat() {
-    return [
-      ...(this.opts.includes("zero") ? this.p.flat() : []),
-      ...(this.complete ? [this] : []),
-    ];
-  }
-
-  update(element) {
-    let u2 = defaults.unit / 2;
-    let cross = d3.select(element);
-    cross
-      .select("xaxis")
-      .attr("x1", this.p.x - this.dx - u2)
-      .attr("y1", this.p.y)
-      .attr("x2", this.p.x - this.dx + this.w + u2)
-      .attr("y2", this.p.y);
-    cross
-      .select("yaxis")
-      .attr("x1", this.p.x)
-      .attr("y1", this.p.y + this.dy + u2)
-      .attr("x2", this.p.x)
-      .attr("y2", this.p.y + this.dy - this.h - u2);
-  }
-
-  svg(w, h) {
-    let classes = this.opts.concat("xycross").join(" ");
-    let u2 = defaults.unit / 2;
-    let cross = d3.create("svg:g").attr("id", this.id).attr("class", classes);
-    cross
-      .append("svg:line")
-      .attr("class", "xaxis")
-      .attr("x1", this.p.x - this.dx - u2)
-      .attr("y1", this.p.y)
-      .attr("x2", this.p.x - this.dx + this.w + u2)
-      .attr("y2", this.p.y)
-      .attr("marker-end", "url(#normal-arrow)");
-    cross
-      .append("svg:line")
-      .attr("class", "yaxis")
-      .attr("x1", this.p.x)
-      .attr("y1", this.p.y + this.dy + u2)
-      .attr("x2", this.p.x)
-      .attr("y2", this.p.y + this.dy - this.h - u2)
-      .attr("marker-end", "url(#normal-arrow)");
-    return cross.node();
+    let x = vector(
+      point(p.x - dx - u2, p.y, "invisible"),
+      w + 2 * u2,
+      0,
+      "xaxis",
+      "arrow",
+      ...opts
+    );
+    let y = vector(
+      point(p.x, p.y + dy + u2, "invisible"),
+      0,
+      -h - 2 * u2,
+      "yaxis",
+      "arrow",
+      ...opts
+    );
+    super(p, x, y);
   }
 }
 
@@ -1054,33 +1003,6 @@ function flatten(root) {
 
 function clip(max, v) {
   return Math.min(Math.max(0, v), max);
-}
-
-function addArrowMarker(sel, id, cls, mw, mh) {
-  return sel
-    .append("marker")
-    .attr("id", id)
-    .attr("class", cls)
-    .attr("refX", mw - 1)
-    .attr("refY", mh / 2)
-    .attr("markerWidth", mw)
-    .attr("markerHeight", mh)
-    .attr("orient", "auto")
-    .append("path")
-    .attr("d", `M 1 1 L ${mw - 1} ${mh / 2} L 1 ${mh - 1}`);
-}
-
-// Add a SVG element that contains the shared definitions for this document.
-function addDefs(svg) {
-  let defs = svg.attr("id", "geometry defs").append("defs");
-
-  const mw = defaults.arrow.w;
-  const mh = defaults.arrow.h;
-
-  addArrowMarker(defs, "computed-arrow", "computed", mw, mh);
-  addArrowMarker(defs, "vector-arrow", "vector", mw, mh);
-  addArrowMarker(defs, "normal-arrow", "normal", mw, mh);
-  addArrowMarker(defs, "dim-arrow", "dim", mw, mh);
 }
 
 function update(svg, width, height, root) {
@@ -1148,8 +1070,6 @@ function renderSvg(element, width, height, root) {
       // if (debug)   console.log("bounding", this.getBoundingClientRect());
       // if (debug)   console.log("viewbox", this.viewBox.baseVal.width, this.viewBox.baseVal.height);
     });
-
-  addDefs(svg);
 
   let clientToBoxX, clientToBoxY;
   let svgElement = svg.node();
