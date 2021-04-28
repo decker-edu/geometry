@@ -9,6 +9,7 @@ export {
   group,
   text,
   swtch,
+  swtchN,
   unfold,
   mirror,
   project,
@@ -49,6 +50,7 @@ const defaults = {
   },
   unit: 60,
   arrow: { w: 9, h: 7 },
+  text: {},
 };
 
 let nextId = 0;
@@ -441,6 +443,7 @@ class Switch extends Shape {
     this.cond = cond;
     this.shapes = shapes;
     this.callbacks = { on: [], off: [] };
+    this.not = false;
   }
 
   on(which, func) {
@@ -450,7 +453,7 @@ class Switch extends Shape {
 
   evaluate() {
     this.shapes.map((s) => s.evaluate());
-    let c = this.cond.evaluate();
+    let c = this.not ? !this.cond.evaluate() : this.cond.evaluate();
     if (c) {
       this.callbacks["on"].map((cb) => cb());
     } else {
@@ -467,6 +470,17 @@ class Switch extends Shape {
 
 function swtch(...args) {
   return new Switch(...args);
+}
+
+class SwitchN extends Switch {
+  constructor(...args) {
+    super(...args);
+    this.not = true;
+  }
+}
+
+function swtchN(...args) {
+  return new SwitchN(...args);
 }
 
 class Unfold extends Point {
