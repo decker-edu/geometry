@@ -24,6 +24,7 @@ export {
   defaults,
   setZoom,
   withMathJax,
+  circular,
 };
 
 import { Clipper } from "./clip.js";
@@ -90,11 +91,14 @@ class Shape {
   }
 }
 
+function circular(c, r) {
+  return (x, y) => add(c, mul(r, norm(sub(vec2(x, y), c))));
+}
+
 class Point extends Shape {
   constructor(x, y, ...opts) {
     super();
-    this.x = x;
-    this.y = y;
+    this.move(x,y);
     this.r = defaults.point.r;
     this.opts = opts.length == 0 ? defaults.point.opts : opts;
     if (this.opts.includes("drag")) this.zIndex = 1000;
@@ -102,8 +106,14 @@ class Point extends Shape {
   }
 
   move(x, y) {
-    this.x = x;
-    this.y = y;
+    if (this.constraint) {
+      let p = this.constraint(x, y);
+      this.x = p.x;
+      this.y = p.y;
+    } else {
+      this.x = x;
+      this.y = y;
+    }
   }
 
   update(element) {
@@ -1032,7 +1042,6 @@ class Lobe extends Shape {
       .join(
         (enter) =>
           enter.append((d) => {
-            console.log(d);
             return d3
               .create("svg:path")
               .attr("class", classes)
@@ -1050,11 +1059,13 @@ class Lobe extends Shape {
       let nn = norm(sub(this.normal.p2, this.normal.p1));
       let w = sub(this.wi, this.normal.p1);
       let wl = len(w);
-      let pn = perp(nn);
-      let an = norm(vec2(Math.cos(a), Math.sin(a)));
-      let ap = norm(add(mul(an.x, pn), mul(an.y, nn)));
-      let p = mul(wl * this.f(a, ap, w, nn), ap);
-      data.push({ id: a, path: vectorPath(vec2(0, 0), p, this.opts) });
+      let pn = norm(perp(nn));
+      let ap = norm(add(mul(Math.cos(a), pn), mul(Math.sin(a), nn)));
+      let fa = this.f(a, ap, w, nn);
+      if (fa > 0) {
+        let p = mul(fa, ap);
+        data.push({ id: a, path: vectorPath(vec2(0, 0), p, this.opts) });
+      }
     }
     return data;
   }
