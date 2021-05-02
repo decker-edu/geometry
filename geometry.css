@@ -73,10 +73,6 @@ svg.geometry circle.point.drag {
   stroke: darkgreen;
 }
 
-svg.geometry circle.point.invisible {
-  visibility: hidden;
-}
-
 svg.geometry circle.point.red {
   stroke: red;
 }
@@ -85,11 +81,26 @@ svg.geometry circle.point.strong {
   stroke-width: calc(var(--stroke-width) * 1.5);
 }
 
+svg.geometry circle.point.invisible {
+  visibility: hidden;
+}
+
 svg.geometry path.line {
   fill: none;
   stroke: black;
   stroke-width: var(--stroke-width);
   stroke-linecap: round;
+}
+
+svg.geometry path.lobe {
+  fill: none;
+  stroke: black;
+  stroke-width: var(--stroke-width);
+  stroke-linecap: round;
+}
+
+svg.geometry path.line.invisible {
+  visibility: hidden;
 }
 
 svg.geometry path.xaxis {

@@ -1,9 +1,10 @@
-export { vec2, len, norm, add, sub, mul, div, dot, perp };
+export { vec2, len, dist, norm, add, sub, mul, div, dot, perp };
 
 let vec2 = (x, y) => {
   return { x, y };
 };
 let len = (v) => Math.sqrt(v.x * v.x + v.y * v.y);
+let dist = (a, b) => len(sub(a, b));
 let norm = (v) => div(v, len(v));
 let add = (a, b, ...vs) => {
   let r = vec2(a.x + b.x, a.y + b.y);

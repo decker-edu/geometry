@@ -27,7 +27,10 @@ export {
 };
 
 import { Clipper } from "./clip.js";
+import "./d3.min.js";
 import { vec2, len, norm, add, sub, mul, div, dot, perp } from "./vec2.js";
+
+export * from "./vec2.js";
 
 const debug = true;
 
@@ -169,6 +172,20 @@ function text(...args) {
   return new Text(...args);
 }
 
+function vectorPath(a, b, opts) {
+  let d = norm(sub(b, a));
+  let p = perp(d);
+  let sp = 0.16 * defaults.unit;
+  let sd = -0.4 * defaults.unit;
+  let w1 = add(b, mul(sp, p), mul(sd, d));
+  let w2 = add(b, mul(-sp, p), mul(sd, d));
+  if (opts.includes("arrow")) {
+    return `M ${a.x}  ${a.y} L  ${b.x} ${b.y} L ${w1.x} ${w1.y} M ${b.x} ${b.y} L ${w2.x} ${w2.y}`;
+  } else {
+    return `M ${a.x}  ${a.y} L  ${b.x} ${b.y}`;
+  }
+}
+
 class Line extends Shape {
   constructor(p1, p2, ...opts) {
     super();
@@ -204,26 +221,12 @@ class Line extends Shape {
     ];
   }
 
-  path(a, b) {
-    let d = norm(sub(b, a));
-    let p = perp(d);
-    let sp = 0.16 * defaults.unit;
-    let sd = -0.4 * defaults.unit;
-    let w1 = add(b, mul(sp, p), mul(sd, d));
-    let w2 = add(b, mul(-sp, p), mul(sd, d));
-    if (this.opts.includes("arrow")) {
-      return `M ${a.x}  ${a.y} L  ${b.x} ${b.y} L ${w1.x} ${w1.y} M ${b.x} ${b.y} L ${w2.x} ${w2.y}`;
-    } else {
-      return `M ${a.x}  ${a.y} L  ${b.x} ${b.y}`;
-    }
-  }
-
   update(element) {
     if (this.c) {
       let [n, xp1, xp2] = this.c.clipLine(this.p1, this.p2);
-      d3.select(element).attr("d", this.path(xp1, xp2));
+      d3.select(element).attr("d", vectorPath(xp1, xp2, this.opts));
     } else {
-      d3.select(element).attr("d", this.path(this.p1, this.p2));
+      d3.select(element).attr("d", vectorPath(this.p1, this.p2, this.opts));
     }
   }
 
@@ -233,9 +236,9 @@ class Line extends Shape {
     if (this.opts.includes("infinite")) {
       this.c = new Clipper({ x: 0, y: 0 }, { x: w, y: h });
       let [n, xp1, xp2] = this.c.clipLine(this.p1, this.p2);
-      line.attr("d", this.path(xp1, xp2));
+      line.attr("d", vectorPath(xp1, xp2, this.opts));
     } else {
-      line.attr("d", this.path(this.p1, this.p2));
+      line.attr("d", vectorPath(this.p1, this.p2, this.opts));
     }
     return line.node();
   }
@@ -878,8 +881,8 @@ class IsectLineCircle extends Calculated {
 }
 
 class Mirror extends Point {
-  constructor(center, point) {
-    super(0, 0, "computed");
+  constructor(center, point, ...opts) {
+    super(0, 0, "computed", ...opts);
     this.center = center;
     this.point = point;
   }
@@ -906,7 +909,7 @@ function mirror(...args) {
 
 class Sum extends Line {
   constructor(base, line, ...opts) {
-    super(base, point(0, 0, "computed"), ...opts);
+    super(base, point(0, 0, "computed", ...opts), ...opts);
     this.line = line;
   }
 
@@ -995,6 +998,81 @@ class XYcross extends Group {
 
 export function xycross(...args) {
   return new XYcross(...args);
+}
+
+class Lobe extends Shape {
+  constructor(normal, wi, n, f, ...opts) {
+    super();
+    this.normal = normal;
+    this.wi = wi;
+    this.n = n;
+    this.f = f;
+    this.opts = opts;
+  }
+
+  evaluate() {
+    return (this.complete = Shape.all(this.normal, this.wi));
+  }
+
+  flat() {
+    return [
+      ...this.normal.flat(),
+      ...this.wi.flat(),
+      ...(this.complete ? [this] : []),
+    ];
+  }
+
+  update(element) {
+    let classes = this.opts.concat("lobe").join(" ");
+    let data = this.lobeData();
+    d3.select(element)
+      .attr("transform", `translate(${this.normal.p1.x},${this.normal.p1.y})`)
+      .selectChildren()
+      .data(data, (d) => d.id)
+      .join(
+        (enter) =>
+          enter.append((d) => {
+            console.log(d);
+            return d3
+              .create("svg:path")
+              .attr("class", classes)
+              .attr("d", d.path)
+              .node();
+          }),
+        (update) => update.attr("d", (d) => d.path),
+        (exit) => exit.remove()
+      );
+  }
+
+  lobeData() {
+    let data = [];
+    for (let a = 0; a <= Math.PI; a += Math.PI / this.n) {
+      let nn = norm(sub(this.normal.p2, this.normal.p1));
+      let w = sub(this.wi, this.normal.p1);
+      let wl = len(w);
+      let pn = perp(nn);
+      let an = norm(vec2(Math.cos(a), Math.sin(a)));
+      let ap = norm(add(mul(an.x, pn), mul(an.y, nn)));
+      let p = mul(wl * this.f(a, ap, w, nn), ap);
+      data.push({ id: a, path: vectorPath(vec2(0, 0), p, this.opts) });
+    }
+    return data;
+  }
+
+  svg(w, h) {
+    let classes = this.opts.concat("lobe").join(" ");
+    let fan = d3
+      .create("svg:g")
+      .attr("id", this.id)
+      .attr("class", classes)
+      .attr("transform", `translate(${this.normal.p1.x},${this.normal.p1.y})`);
+    this.update(fan.node());
+    return fan.node();
+  }
+}
+
+export function lobe(...args) {
+  return new Lobe(...args);
 }
 
 // Makes array elements unique by id as a key by way of built-in object
@@ -1105,13 +1183,7 @@ function renderSvg(element, width, height, root) {
       update(svg, width, height, root);
     });
 
-  svg
-    .selectChildren("*[id]")
-    .data(flatten(root), (d) => d.id)
-    .enter()
-    .append((d) => {
-      return d.svg(width, height);
-    });
+  update(svg, width, height, root);
 
   svg.selectChildren("*[id].handle").call(drag);
   svg.selectChildren("*[id].play").on("click", clicked);
