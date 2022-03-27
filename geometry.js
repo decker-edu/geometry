@@ -33,7 +33,7 @@ import { vec2, len, norm, add, sub, mul, div, dot, perp } from "./vec2.js";
 
 export * from "./vec2.js";
 
-const debug = true;
+const debug = false;
 
 const defaults = {
   point: { r: 6, opts: [] }, // one of [, "drag", "computed"]
@@ -98,7 +98,7 @@ function circular(c, r) {
 class Point extends Shape {
   constructor(x, y, ...opts) {
     super();
-    this.move(x,y);
+    this.move(x, y);
     this.r = defaults.point.r;
     this.opts = opts.length == 0 ? defaults.point.opts : opts;
     if (this.opts.includes("drag")) this.zIndex = 1000;
@@ -1011,11 +1011,12 @@ export function xycross(...args) {
 }
 
 class Lobe extends Shape {
-  constructor(normal, wi, n, f, ...opts) {
+  constructor(normal, wi, n, l, f, ...opts) {
     super();
     this.normal = normal;
     this.wi = wi;
     this.n = n;
+    this.l = l;
     this.f = f;
     this.opts = opts;
   }
@@ -1041,14 +1042,17 @@ class Lobe extends Shape {
       .data(data, (d) => d.id)
       .join(
         (enter) =>
-          enter.append((d) => {
-            return d3
+          enter.append((d) =>
+            d3
               .create("svg:path")
               .attr("class", classes)
               .attr("d", d.path)
-              .node();
-          }),
-        (update) => update.attr("d", (d) => d.path),
+              .style("stroke-width", d.width)
+              .node()
+          ),
+        (update) => {
+          update.style("stroke-width", (d) => d.width).attr("d", (d) => d.path);
+        },
         (exit) => exit.remove()
       );
   }
@@ -1063,8 +1067,12 @@ class Lobe extends Shape {
       let ap = norm(add(mul(Math.cos(a), pn), mul(Math.sin(a), nn)));
       let fa = this.f(a, ap, w, nn);
       if (fa > 0) {
-        let p = mul(fa, ap);
-        data.push({ id: a, path: vectorPath(vec2(0, 0), p, this.opts) });
+        let p = mul(fa * this.l, ap);
+        data.push({
+          id: a,
+          path: vectorPath(vec2(0, 0), p, this.opts),
+          width: `calc(var(--stroke-width) * 1.5 * ${fa})`,
+        });
       }
     }
     return data;

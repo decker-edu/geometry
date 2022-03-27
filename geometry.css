@@ -1,10 +1,13 @@
 svg.geometry {
+  --stroke: var(--shade7);
+  --stroke-computed: var(--accent2);
+  --stroke-normal: var(--accent5);
   --stroke-width: 4px;
   --stroke-width-handle: calc(var(--stroke-width) / 2);
 }
 
 svg.geometry {
-  border: solid 1px black;
+  border: solid 1px var(--shade7);
   -moz-user-select: none;
   -khtml-user-select: none;
   -webkit-user-select: none;
@@ -18,26 +21,26 @@ svg.geometry line {
 
 svg.geometry marker {
   fill: none;
-  stroke: black;
+  stroke: var(--stroke);
   stroke-width: 1;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
 svg.geometry marker.computed {
-  stroke: darkred;
+  stroke: var(--stroke-computed);
 }
 
 svg.geometry marker.vector {
-  stroke: black;
+  stroke: var(--stroke);
 }
 
 svg.geometry marker.normal {
-  stroke: darkblue;
+  stroke: var(--stroke-normal);
 }
 
 svg.geometry marker.dim {
-  stroke: darkgray;
+  stroke: var(--shade5);
 }
 
 svg.geometry circle.handle {
@@ -49,32 +52,32 @@ svg.geometry circle.handle {
 }
 
 svg.geometry circle.handle:hover {
-  stroke: gray;
+  stroke: var(--shade5);
   /* cursor: grab; */
 }
 
 svg.geometry circle.handle:active {
-  stroke: gray;
+  stroke: var(--shade5);
   stroke-width: var(--stroke-width);
   /* cursor: default; */
 }
 
 svg.geometry circle.point {
-  stroke: black;
+  stroke: var(--stroke);
   stroke-width: var(--stroke-width);
-  fill: lightgray;
+  fill: var(--shade5);
 }
 
 svg.geometry circle.point.computed {
-  stroke: darkred;
+  stroke: var(--accent0);
 }
 
 svg.geometry circle.point.drag {
-  stroke: darkgreen;
+  stroke: var(--accent3);
 }
 
 svg.geometry circle.point.red {
-  stroke: red;
+  stroke: var(--stroke-computed);
 }
 
 svg.geometry circle.point.strong {
@@ -87,14 +90,14 @@ svg.geometry circle.point.invisible {
 
 svg.geometry path.line {
   fill: none;
-  stroke: black;
+  stroke: var(--stroke);
   stroke-width: var(--stroke-width);
   stroke-linecap: round;
 }
 
 svg.geometry path.lobe {
   fill: none;
-  stroke: black;
+  stroke: var(--stroke);
   stroke-width: var(--stroke-width);
   stroke-linecap: round;
 }
@@ -112,15 +115,15 @@ svg.geometry path.yaxis {
 }
 
 svg.geometry path.normal {
-  stroke: darkblue;
+  stroke: var(--stroke-normal);
 }
 
 svg.geometry path.dim {
-  stroke: darkgray;
+  stroke: var(--shade5);
 }
 
 svg.geometry path.computed {
-  stroke: darkred;
+  stroke: var(--accent0);
   stroke-width: calc(var(--stroke-width) * 1.5);
 }
 
@@ -131,83 +134,83 @@ svg.geometry path.infinite {
 }
 
 svg.geometry path.emph {
-  stroke: darkorange;
+  stroke: var(--accent1);
   stroke-width: calc(var(--stroke-width) * 1.5);
 }
 
 svg.geometry line.line {
-  stroke: black;
+  stroke: var(--stroke);
   stroke-width: var(--stroke-width);
   stroke-linecap: round;
 }
 
 svg.geometry line.line.infinite {
-  stroke: black;
+  stroke: var(--stroke);
   stroke-width: calc(var(--stroke-width) / 2);
   stroke-linecap: round;
   stroke-dasharray: calc(var(--stroke-width) * 2);
 }
 
 svg.geometry line.line.dim {
-  stroke: darkgray;
+  stroke: var(--shade5);
 }
 
 svg.geometry line.line.computed {
-  stroke: darkred;
+  stroke: var(--accent0);
   stroke-width: calc(var(--stroke-width) * 1.5);
 }
 
 svg.geometry line.line.emph {
-  stroke: darkorange;
+  stroke: var(--accent6);
   stroke-width: calc(var(--stroke-width) * 1.5);
 }
 
 svg.geometry line.line.normal {
-  stroke: darkblue;
+  stroke: var(--stroke-normal);
   stroke-width: var(--stroke-width);
 }
 
 svg.geometry line.xaxis {
-  stroke: black;
+  stroke: var(--stroke);
   stroke-width: calc(var(--stroke-width) / 2);
 }
 
 svg.geometry line.yaxis {
-  stroke: black;
+  stroke: var(--stroke);
   stroke-width: calc(var(--stroke-width) / 2);
 }
 
 svg.geometry path[id].bezier {
-  stroke: darkred;
+  stroke: var(--accent0);
   stroke-width: calc(var(--stroke-width) * 1.5);
   fill: none;
 }
 
 svg.geometry path[id].play {
-  fill: lightgray;
-  stroke: darkgreen;
+  fill: var(--shade5);
+  stroke: var(--accent4);
   stroke-width: var(--stroke-width);
 }
 
 svg.geometry path[id].play:hover {
-  fill: gray;
+  fill: var(--shade6);
 }
 
 svg.geometry path[id].play:active {
-  fill: lightsalmon;
+  fill: var(--accent1);
 }
 
 svg.geometry circle[id].circle {
-  stroke: black;
+  stroke: var(--stroke);
   stroke-width: var(--stroke-width);
   fill: none;
 }
 
 svg.geometry g[id].surface line {
-  stroke: black;
+  stroke: var(--stroke);
   stroke-width: var(--stroke-width);
 }
 
 svg.geometry g[id].surface rect {
-  fill: lightgray;
+  fill: var(--shade1);
 }
