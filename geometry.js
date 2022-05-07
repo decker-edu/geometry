@@ -381,11 +381,12 @@ class Circle extends Shape {
   }
 
   svg(w, h) {
+    let classes = this.opts.concat("circle").join(" ");
     this.radius();
     return d3
       .create("svg:circle")
       .attr("id", this.id)
-      .attr("class", "circle")
+      .attr("class", classes)
       .attr("cx", this.c.x)
       .attr("cy", this.c.y)
       .attr("r", this.r)

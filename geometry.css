@@ -45,7 +45,7 @@ svg.geometry marker.dim {
 
 svg.geometry circle.handle {
   stroke: none;
-  stroke-dasharray: "5,5";
+  stroke-dasharray: "5 5";
   stroke-width: var(--stroke-width-handle);
   fill: white;
   fill-opacity: 0;
@@ -86,6 +86,10 @@ svg.geometry circle.point.strong {
 
 svg.geometry circle.point.invisible {
   visibility: hidden;
+}
+
+svg.geometry circle.circle.dashed {
+  stroke-dasharray: calc(var(--stroke-width) * 2);
 }
 
 svg.geometry path.line {
