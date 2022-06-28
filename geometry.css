@@ -40,7 +40,7 @@ svg.geometry marker.normal {
 }
 
 svg.geometry marker.dim {
-  stroke: var(--shade5);
+  stroke: var(--shade3);
 }
 
 svg.geometry circle.handle {
@@ -123,7 +123,7 @@ svg.geometry path.normal {
 }
 
 svg.geometry path.dim {
-  stroke: var(--shade5);
+  stroke: var(--shade3);
 }
 
 svg.geometry path.computed {

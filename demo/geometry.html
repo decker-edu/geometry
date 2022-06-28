@@ -1,270 +1,397 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <title>Interactive Geometry Diagrams</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/6.6.2/d3.min.js"></script>
-    <script>
-      MathJax = {
-        tex: {
-          inlineMath: [
-            ["$", "$"],
-            ["\\(", "\\)"],
-          ],
-        },
-        svg: {
-          fontCache: "global",
-        },
-      };
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.1.2/es5/tex-svg.js"></script>
-    <style>
-      figure {
-        font-family: sans-serif;
-        font-size: 32px;
-        font-weight: normal;
-      }
-    </style>
-  </head>
 
-  <body>
-    <h1>MathJax -> SVG</h1>
-    <figure style="font-size: 200%">
-      <div id="mathjax-svg">
-        <svg viewbox="0 0 200 100" style="border: 1px solid black"></svg>
-      </div>
-      <figcaption>$e=mc^2$</figcaption>
-    </figure>
-    <script type="module">
-      let anchor = document.querySelector("#mathjax-svg > svg");
-      let node = MathJax.tex2svg("e=mc^2", {
-        display: false,
-      }).querySelector("svg");
-      anchor.appendChild(node);
-    </script>
+<head>
+  <meta charset="utf-8" />
+  <title>Interactive Geometry Diagrams</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/6.6.2/d3.min.js"></script>
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [
+          ["$", "$"],
+          ["\\(", "\\)"],
+        ],
+      },
+      svg: {
+        fontCache: "global",
+      },
+    };
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.1.2/es5/tex-svg.js"></script>
+  <style>
+    figure {
+      font-family: sans-serif;
+      font-size: 32px;
+      font-weight: normal;
+    }
+  </style>
+  <link rel="stylesheet" type="text/css" href="../variables.css">
+</head>
 
-    <h1>Bezier Segment</h1>
-    <figure>
-      <div id="bezier"></div>
-      <figcaption>Make sure to drag something.</figcaption>
-    </figure>
-    <script type="module">
-      let anchor = document.getElementById("bezier");
-      import * as g from "../geometry.js";
-      let segment = g.bezier(
-        g.point(60, 60),
-        g.point(540, 60, "drag"),
-        g.point(540, 340, "drag"),
-        g.point(60, 340)
-      );
-      g.renderSvg(anchor, 600, 400, segment);
-    </script>
+<body>
+  <h1>MathJax -> SVG</h1>
+  <figure style="font-size: 200%">
+    <div id="mathjax-svg">
+      <svg viewbox="0 0 200 100" style="border: 1px solid black"></svg>
+    </div>
+    <figcaption>$e=mc^2$</figcaption>
+  </figure>
+  <script type="module">
+    let anchor = document.querySelector("#mathjax-svg > svg");
+    let node = MathJax.tex2svg("e=mc^2", {
+      display: false,
+    }).querySelector("svg");
+    anchor.appendChild(node);
+  </script>
 
-    <h1>Sphere</h1>
-    <figure>
-      <div id="sphere"></div>
-      <figcaption>Just a sphere</figcaption>
-    </figure>
-    <script type="module">
-      let anchor = document.getElementById("sphere");
-      import * as g from "../geometry.js";
+  <h1>Bezier Segment</h1>
+  <figure>
+    <div id="bezier"></div>
+    <figcaption>Make sure to drag something.</figcaption>
+  </figure>
+  <script type="module">
+    let anchor = document.getElementById("bezier");
+    import * as g from "../geometry.js";
+    let segment = g.bezier(
+      g.point(60, 60),
+      g.point(540, 60, "drag"),
+      g.point(540, 340, "drag"),
+      g.point(60, 340)
+    );
+    g.renderSvg(anchor, 600, 400, segment);
+  </script>
 
-      let c1 = g.circle(g.point(300, 300, "drag"), 200);
-      let c2 = g.circle(g.point(600, 300, "drag"), g.point(500, 300, "drag"));
-      let root = g.group(c1, c2);
-      g.renderSvg(anchor, 1200, 600, root);
-    </script>
+  <h1>Sphere</h1>
+  <figure>
+    <div id="sphere"></div>
+    <figcaption>Just a sphere</figcaption>
+  </figure>
+  <script type="module">
+    let anchor = document.getElementById("sphere");
+    import * as g from "../geometry.js";
 
-    <h1>Intersection</h1>
-    <figure>
-      <div id="intersection"></div>
-      <figcaption>Bang!</figcaption>
-    </figure>
-    <script type="module">
-      let anchor = document.getElementById("intersection");
-      import * as g from "../geometry.js";
+    let c1 = g.circle(g.point(300, 300, "drag"), 200);
+    let c2 = g.circle(g.point(600, 300, "drag"), g.point(500, 300, "drag"));
+    let root = g.group(c1, c2);
+    g.renderSvg(anchor, 1200, 600, root);
+  </script>
 
-      let caption = anchor.parentNode.querySelector("figcaption");
-      if (caption) caption.style.visibility = "hidden";
+  <h1>Intersection</h1>
+  <figure>
+    <div id="intersection"></div>
+    <figcaption>Bang!</figcaption>
+  </figure>
+  <script type="module">
+    let anchor = document.getElementById("intersection");
+    import * as g from "../geometry.js";
 
-      function flashCaption(vis) {
-        if (caption) caption.style.visibility = vis;
-      }
+    let caption = anchor.parentNode.querySelector("figcaption");
+    if (caption) caption.style.visibility = "hidden";
 
-      let center = g.point(300, 300, "drag");
-      let intersection = new g.IsectLineCircle(
-        g.line(g.point(60, 60, "drag"), g.point(540, 60, "drag")),
-        g.circle(center, 200)
-      );
+    function flashCaption(vis) {
+      if (caption) caption.style.visibility = vis;
+    }
 
-      let math = String.raw`L_r = A\otimes \frac{L}{|\mathbf{p}-\mathbf{x}|^2}((\widehat{\mathbf{p}-\mathbf{x}})\cdot\mathbf{n})`;
-      let swtch = g
-        .swtch(
-          intersection.p1,
-          g.mlabel(g.point(580, 300, "invisible"), math, "ne", true)
-        )
-        .on("on", () => flashCaption("visible"))
-        .on("off", () => flashCaption("hidden"));
+    let center = g.point(300, 300, "drag");
+    let intersection = new g.IsectLineCircle(
+      g.line(g.point(60, 60, "drag"), g.point(540, 60, "drag")),
+      g.circle(center, 200)
+    );
 
-      let root = g.group(
-        intersection.p2,
-        intersection.n2,
+    let math = String.raw`L_r = A\otimes \frac{L}{|\mathbf{p}-\mathbf{x}|^2}((\widehat{\mathbf{p}-\mathbf{x}})\cdot\mathbf{n})`;
+    let swtch = g
+      .swtch(
         intersection.p1,
-        g.line(center, intersection.p1, "emph"),
-        swtch
-      );
-      g.renderSvg(anchor, 1200, 600, root);
-    </script>
+        g.mlabel(g.point(580, 300, "invisible"), math, "ne", true)
+      )
+      .on("on", () => flashCaption("visible"))
+      .on("off", () => flashCaption("hidden"));
 
-    <h1>Reflection</h1>
-    <figure>
-      <div id="reflection"></div>
-      <figcaption>Pretty naked.</figcaption>
-    </figure>
-    <script type="module">
-      let anchor = document.getElementById("reflection");
-      import * as g from "../geometry.js";
+    let root = g.group(
+      intersection.p2,
+      intersection.n2,
+      intersection.p1,
+      g.line(center, intersection.p1, "emph"),
+      swtch
+    );
+    g.renderSvg(anchor, 1200, 600, root);
+  </script>
 
-      let surfaceAnchor = g.point(300, 230);
-      let surfaceNormal = g.vector(surfaceAnchor, 0, -200, "normal", "arrow");
-      let wi = g.point(80, 100, "drag");
-      let mwi = g.mirror(surfaceAnchor, wi);
-      let projection = g.line(
-        surfaceAnchor,
-        g.project(surfaceNormal.p1, surfaceNormal.p2, wi, "line"),
-        "arrow"
-      );
-      let proj1 = g.sum(mwi, projection, "arrow");
-      let proj2 = g.sum(proj1.p2, projection, "arrow");
+  <h1>Reflection</h1>
+  <figure>
+    <div id="reflection"></div>
+    <figcaption>Pretty naked.</figcaption>
+  </figure>
+  <script type="module">
+    let anchor = document.getElementById("reflection");
+    import * as g from "../geometry.js";
 
-      let root = g.group(
-        g.surface(surfaceAnchor, 500),
-        surfaceNormal,
-        g.line(surfaceAnchor, wi, "arrow"),
-        projection,
-        g.line(surfaceAnchor, mwi, "arrow"),
+    let surfaceAnchor = g.point(300, 230);
+    let surfaceNormal = g.vector(surfaceAnchor, 0, -200, "normal", "arrow");
+    let wi = g.point(80, 100, "drag");
+    let mwi = g.mirror(surfaceAnchor, wi);
+    let projection = g.line(
+      surfaceAnchor,
+      g.project(surfaceNormal.p1, surfaceNormal.p2, wi, "line"),
+      "arrow"
+    );
+    let proj1 = g.sum(mwi, projection, "arrow");
+    let proj2 = g.sum(proj1.p2, projection, "arrow");
+
+    let root = g.group(
+      g.surface(surfaceAnchor, 500),
+      surfaceNormal,
+      g.line(surfaceAnchor, wi, "arrow"),
+      projection,
+      g.line(surfaceAnchor, mwi, "arrow"),
+      proj1,
+      proj2,
+      g.line(wi, projection.p2, "infinite"),
+      g.line(surfaceAnchor, proj2.p2, "arrow")
+    );
+
+    g.renderSvg(anchor, 600, 400, root);
+  </script>
+
+  <h1>Reflection 2</h1>
+  <figure>
+    <div id="reflection-2"></div>
+    <figcaption>Pretty naked.</figcaption>
+  </figure>
+  <script type="module">
+    let anchor = document.getElementById("reflection-2");
+    import * as g from "../geometry.js";
+
+    let surfaceAnchor = g.point(300, 230, "drag");
+    let surfaceNormal = g.vector(surfaceAnchor, 0, -180, "normal", "arrow");
+    let wi = g.point(80, 100, "drag");
+    let mwi = g.mlabel(g.mirror(surfaceAnchor, wi), "\\mathbf{-d}_i");
+    let projection = g.line(
+      surfaceAnchor,
+      g.mlabel(
+        g.project(surfaceNormal.p1, surfaceNormal.p2, wi),
+        "\\mathbf{d}_i\\cdot\\mathbf{n}"
+      ),
+      "arrow"
+    );
+    let proj1 = g.sum(mwi, projection, "arrow");
+    let proj2 = g.sum(proj1.p2, projection, "arrow");
+    let unfold = g.unfold(
+      60,
+      360,
+      g.group(projection, g.line(wi, projection.p2, "infinite")),
+      g.line(surfaceAnchor, mwi, "arrow"),
+      g.group(
         proj1,
+        g.mlabel(proj1.p2, "\\mathbf{d}_i\\cdot\\mathbf{n}", "ne")
+      ),
+      g.group(
         proj2,
-        g.line(wi, projection.p2, "infinite"),
-        g.line(surfaceAnchor, proj2.p2, "arrow")
-      );
-
-      g.renderSvg(anchor, 600, 400, root);
-    </script>
-
-    <h1>Reflection 2</h1>
-    <figure>
-      <div id="reflection-2"></div>
-      <figcaption>Pretty naked.</figcaption>
-    </figure>
-    <script type="module">
-      let anchor = document.getElementById("reflection-2");
-      import * as g from "../geometry.js";
-
-      let surfaceAnchor = g.point(300, 230, "drag");
-      let surfaceNormal = g.vector(surfaceAnchor, 0, -180, "normal", "arrow");
-      let wi = g.point(80, 100, "drag");
-      let mwi = g.mlabel(g.mirror(surfaceAnchor, wi), "\\mathbf{-d}_i");
-      let projection = g.line(
+        g.mlabel(proj2.p2, "\\mathbf{d}_i\\cdot\\mathbf{n}", "se")
+      ),
+      g.line(
         surfaceAnchor,
-        g.mlabel(
-          g.project(surfaceNormal.p1, surfaceNormal.p2, wi),
-          "\\mathbf{d}_i\\cdot\\mathbf{n}"
-        ),
+        g.mlabel(proj2.p2, "\\mathbf{d}_r", "ne", true),
         "arrow"
-      );
-      let proj1 = g.sum(mwi, projection, "arrow");
-      let proj2 = g.sum(proj1.p2, projection, "arrow");
-      let unfold = g.unfold(
-        60,
-        360,
-        g.group(projection, g.line(wi, projection.p2, "infinite")),
-        g.line(surfaceAnchor, mwi, "arrow"),
-        g.group(
-          proj1,
-          g.mlabel(proj1.p2, "\\mathbf{d}_i\\cdot\\mathbf{n}", "ne")
+      )
+    );
+    let root = g.group(
+      g.surface(surfaceAnchor, 500),
+      surfaceNormal,
+      g.line(surfaceAnchor, wi, "arrow"),
+      g.label(unfold, "Click (and drag) me plenty!", "ne", true),
+      g.mlabel(unfold, "\\sqrt{x^2+y^2}", "se", true),
+      g.mlabel(wi, "\\mathbf{d}_i", "ne", true),
+      g.mlabel(surfaceNormal.p2, "\\mathbf{n}", "ne", true)
+    );
+
+    g.renderSvg(anchor, 600, 400, root);
+  </script>
+
+  <h1>Infinite Line</h1>
+  <figure>
+    <div id="infinite-line"></div>
+    <figcaption>To $\infty$ and beyond!</figcaption>
+  </figure>
+  <script type="module">
+    let anchor = document.getElementById("infinite-line");
+    import * as g from "../geometry.js";
+
+    let p = g.point(100, 150, "drag");
+    let q = g.point(400, 150, "drag");
+
+    g.renderSvg(anchor, 500, 300, g.group(g.line(p, q, "infinite")));
+  </script>
+
+  <h1>Coordinate Cross</h1>
+  <figure>
+    <div id="coordinate-cross"></div>
+    <figcaption></figcaption>
+  </figure>
+  <script type="module">
+    let anchor = document.getElementById("coordinate-cross");
+    import * as g from "../geometry.js";
+
+    let p1 = g.point(100, 400);
+    let pn = g.point(100, 400, "drag", "invisible");
+    let p2 = g.point(300, 200, "drag");
+
+    g.renderSvg(
+      anchor,
+      1200,
+      500,
+      g.group(
+        g.line(p1, p2, "dim", "arrow"),
+        g.vector(pn, 100, -150, "normal", "arrow"),
+        g.xycross(p1, 400, 300),
+        g.xycross(g.point(800, 200), 400, 300, "center")
+      )
+    );
+  </script>
+
+  <h1 id="linear-interpolation">Linear Interpolation</h1>
+  <figure>
+    <div id="linear"></div>
+    <figcaption></figcaption>
+  </figure>
+  <script type="module">
+    let anchor = document.getElementById("linear");
+    import * as g from "../geometry.js";
+    import * as v from "../vec2.js";
+
+    let p1 = g.point(100, 300, "drag");
+    let p2 = g.point(400, 100, "drag");
+    let slider = g.slider(30, 30);
+    let linear = (s, a, b) => v.add(v.mul(1 - s.v, a), v.mul(s.v, b));
+    let a = g.interpolate(linear, slider, p1, p2);
+    let math = String.raw`\vec{p}(t)=(1-t)\vec{a}+t\vec{b}`;
+
+    g.renderSvg(
+      anchor,
+      600,
+      400,
+      g.group(
+        g.group(p1, p2),
+        g.unfold(
+          30,
+          360,
+          g.mlabel(a, math, "se", true),
+          g.line(p1, p2),
         ),
-        g.group(
-          proj2,
-          g.mlabel(proj2.p2, "\\mathbf{d}_i\\cdot\\mathbf{n}", "se")
+      )
+    );
+  </script>
+
+  <h1 id="interpol">Quadratic Bezier Interpolation</h1>
+  <figure>
+    <div id="interpolate"></div>
+    <figcaption></figcaption>
+  </figure>
+  <script type="module">
+    let anchor = document.getElementById("interpolate");
+    import * as g from "../geometry.js";
+    import * as v from "../vec2.js";
+
+    let p1 = g.point(100, 300, "drag");
+    let p2 = g.point(300, 100, "drag");
+    let p3 = g.point(500, 100, "drag");
+    let slider = g.slider(30, 30);
+    let linear = (s, a, b) => v.add(v.mul(1 - s.v, a), v.mul(s.v, b));
+    let a = g.interpolate(linear, slider, p1, p2);
+    let b = g.interpolate(linear, slider, p2, p3);
+    let c = g.interpolate(linear, slider, a, b);
+
+    g.renderSvg(
+      anchor,
+      600,
+      400,
+      g.group(
+        g.group(p1, p2, p3),
+        g.unfold(
+          30,
+          360,
+          g.line(p1, p2, "dim"),
+          g.line(p2, p3, "dim"),
+          a,
+          b,
+          g.line(a, b, "dim"),
+          c,
+          g.bezier2(p1, p2, p3)
         ),
-        g.line(
-          surfaceAnchor,
-          g.mlabel(proj2.p2, "\\mathbf{d}_r", "ne", true),
-          "arrow"
-        )
-      );
-      let root = g.group(
-        g.surface(surfaceAnchor, 500),
-        surfaceNormal,
-        g.line(surfaceAnchor, wi, "arrow"),
-        g.label(unfold, "Click (and drag) me plenty!", "ne", true),
-        g.mlabel(unfold, "\\sqrt{x^2+y^2}", "se", true),
-        g.mlabel(wi, "\\mathbf{d}_i", "ne", true),
-        g.mlabel(surfaceNormal.p2, "\\mathbf{n}", "ne", true)
-      );
+      )
+    );
+  </script>
 
-      g.renderSvg(anchor, 600, 400, root);
-    </script>
+  <h1 id="interpol">Cubic Bezier Interpolation</h1>
+  <figure>
+    <div id="interpolate-2"></div>
+    <figcaption></figcaption>
+  </figure>
+  <script type="module">
+    let anchor = document.getElementById("interpolate-2");
+    import * as g from "../geometry.js";
+    import * as v from "../vec2.js";
 
-    <h1>Infinite Line</h1>
-    <figure>
-      <div id="coordinate-cross"></div>
-      <figcaption>To $\infty$ and beyond!</figcaption>
-    </figure>
-    <script type="module">
-      let anchor = document.getElementById("coordinate-cross");
-      import * as g from "../geometry.js";
+    let p1 = g.point(100, 300, "drag");
+    let p2 = g.point(100, 100, "drag");
+    let p3 = g.point(500, 100, "drag");
+    let p4 = g.point(500, 300, "drag");
+    let slider = g.slider(30, 30);
+    let linear = (s, a, b) => v.add(v.mul(1 - s.v, a), v.mul(s.v, b));
+    let q1 = g.interpolate(linear, slider, p1, p2);
+    let q2 = g.interpolate(linear, slider, p2, p3);
+    let q3 = g.interpolate(linear, slider, p3, p4);
+    let r1 = g.interpolate(linear, slider, q1, q2);
+    let r2 = g.interpolate(linear, slider, q2, q3);
+    let s1 = g.interpolate(linear, slider, r1, r2);
 
-      let p = g.point(100, 150, "drag");
-      let q = g.point(400, 150, "drag");
+    g.renderSvg(
+      anchor,
+      600,
+      400,
+      g.group(
+        g.group(p1, p2, p3, p4),
+        g.unfold(
+          30,
+          360,
+          g.line(p1, p2, "dim"),
+          g.line(p2, p3, "dim"),
+          g.line(p3, p4, "dim"),
+          q1,
+          q2,
+          q3,
+          g.line(q1, q2, "dim"),
+          g.line(q2, q3, "dim"),
+          r1,
+          r2,
+          g.line(r1, r2, "dim"),
+          s1,
+          g.bezier(p1, p2, p3, p4)
+        ),
+      )
+    );
+  </script>
 
-      g.renderSvg(anchor, 500, 300, g.group(g.line(p, q, "infinite")));
-    </script>
+  <!-- Keep the scroll position across reloads. -->
+  <script>
+    window.addEventListener(
+      "scroll",
+      function () {
+        localStorage.setItem("scrollPosition", window.scrollY);
+      },
+      false
+    );
+    window.addEventListener(
+      "load",
+      function () {
+        if (localStorage.getItem("scrollPosition") !== null)
+          window.scrollTo(0, localStorage.getItem("scrollPosition"));
+      },
+      false
+    );
+  </script>
+</body>
 
-    <h1>Coordinate Cross</h1>
-    <figure>
-      <div id="coordinate-cross"></div>
-      <figcaption></figcaption>
-    </figure>
-    <script type="module">
-      let anchor = document.getElementById("coordinate-cross");
-      import * as g from "../geometry.js";
-
-      let p1 = g.point(100, 400);
-      let pn = g.point(100, 400, "drag", "invisible");
-      let p2 = g.point(300, 200, "drag");
-
-      g.renderSvg(
-        anchor,
-        1200,
-        500,
-        g.group(
-          g.line(p1, p2, "dim", "arrow"),
-          g.vector(pn, 100, -150, "normal", "arrow"),
-          g.xycross(p1, 400, 300),
-          g.xycross(g.point(800, 200), 400, 300, "center")
-        )
-      );
-    </script>
-    <!-- Keep the scroll position across reloads. -->
-    <script>
-      window.addEventListener(
-        "scroll",
-        function () {
-          localStorage.setItem("scrollPosition", window.scrollY);
-        },
-        false
-      );
-      window.addEventListener(
-        "load",
-        function () {
-          if (localStorage.getItem("scrollPosition") !== null)
-            window.scrollTo(0, localStorage.getItem("scrollPosition"));
-        },
-        false
-      );
-    </script>
-  </body>
 </html>

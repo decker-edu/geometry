@@ -6,6 +6,7 @@ export {
   vector,
   circle,
   bezier,
+  bezier2,
   group,
   text,
   swtch,
@@ -25,15 +26,19 @@ export {
   setZoom,
   withMathJax,
   circular,
+  interpolate,
+  slider,
+  scalar
 };
 
 import { Clipper } from "./clip.js";
 import "./d3.min.js";
+import "./d3-simple-slider.min.js"
 import { vec2, len, norm, add, sub, mul, div, dot, perp } from "./vec2.js";
 
 export * from "./vec2.js";
 
-const debug = false;
+const debug = true;
 
 const defaults = {
   point: { r: 6, opts: [] }, // one of [, "drag", "computed"]
@@ -102,6 +107,7 @@ class Point extends Shape {
     this.r = defaults.point.r;
     this.opts = opts.length == 0 ? defaults.point.opts : opts;
     if (this.opts.includes("drag")) this.zIndex = 1000;
+    if (this.opts.includes("computed")) this.zIndex = 1001;
     else this.zIndex = 100;
   }
 
@@ -151,6 +157,37 @@ class Point extends Shape {
 
 function point(...args) {
   return new Point(...args);
+}
+
+class Scalar extends Shape {
+  constructor(x, y, v, ...opts) {
+    super();
+    this.x = x;
+    this.y = y;
+    this.v = v;
+    this.opts = opts;
+  }
+
+  update(element) {
+    d3.select(element)
+      .attr("x", this.x)
+      .attr("y", this.y)
+      .text(this.v);
+  }
+
+  svg() {
+    let classes = this.opts.concat("scalar").join(" ");
+    let text = d3.create("svg:text")
+      .attr("x", this.x)
+      .attr("y", this.y)
+      .attr("class", "scalar")
+      .text(this.v);
+    return text.node();
+  }
+}
+
+function scalar(...args) {
+  return new Scalar(...args);
 }
 
 class Text extends Shape {
@@ -426,7 +463,7 @@ class Bezier extends Shape {
   update(element) {
     d3.select(element).attr(
       "d",
-      `M${this.p1.x} ${this.p1.y} C ${this.p2.x} ${this.p2.y}, ${this.p3.x} ${this.p3.y}, ${this.p4.x} ${this.p4.y}`
+      `M ${this.p1.x} ${this.p1.y} C ${this.p2.x} ${this.p2.y}, ${this.p3.x} ${this.p3.y}, ${this.p4.x} ${this.p4.y}`
     );
   }
 
@@ -437,7 +474,7 @@ class Bezier extends Shape {
       .attr("class", "bezier")
       .attr(
         "d",
-        `M${this.p1.x} ${this.p1.y} C ${this.p2.x} ${this.p2.y}, ${this.p3.x} ${this.p3.y}, ${this.p4.x} ${this.p4.y}`
+        `M ${this.p1.x} ${this.p1.y} C ${this.p2.x} ${this.p2.y}, ${this.p3.x} ${this.p3.y}, ${this.p4.x} ${this.p4.y}`
       );
     return line.node();
   }
@@ -445,6 +482,53 @@ class Bezier extends Shape {
 
 function bezier(...args) {
   return new Bezier(...args);
+}
+
+class Bezier2 extends Shape {
+  constructor(p1, p2, p3, ...opts) {
+    super();
+    this.p1 = p1;
+    this.p2 = p2;
+    this.p3 = p3;
+    this.opts = opts.length == 0 ? defaults.point.opts : opts;
+    this.zIndex = 10;
+  }
+
+  evaluate() {
+    return (this.complete = Shape.all(this.p1, this.p2, this.p3));
+  }
+
+  flat() {
+    return [
+      ...this.p1.flat(),
+      ...this.p2.flat(),
+      ...this.p3.flat(),
+      ...(this.complete ? [this] : []),
+    ];
+  }
+
+  update(element) {
+    d3.select(element).attr(
+      "d",
+      `M ${this.p1.x} ${this.p1.y} Q ${this.p2.x} ${this.p2.y}, ${this.p3.x} ${this.p3.y}`
+    );
+  }
+
+  svg(w, h) {
+    let line = d3
+      .create("svg:path")
+      .attr("id", this.id)
+      .attr("class", "bezier")
+      .attr(
+        "d",
+        `M ${this.p1.x} ${this.p1.y} Q ${this.p2.x} ${this.p2.y}, ${this.p3.x} ${this.p3.y}`
+      );
+    return line.node();
+  }
+}
+
+function bezier2(...args) {
+  return new Bezier2(...args);
 }
 
 function flip(f) {
@@ -495,6 +579,53 @@ class SwitchN extends Switch {
 
 function swtchN(...args) {
   return new SwitchN(...args);
+}
+
+class Slider extends Scalar {
+  constructor(x, y, min, max, step, width, v) {
+    super(x, y);
+    this.id = nextId++;
+    this.zIndex = 2001;
+    this.min = min || 0;
+    this.max = max || 1;
+    this.step = step || 0.1;
+    this.width = width || 200;
+    this.v = 0;
+  }
+
+  update(element) {
+    d3.select(element).attr(
+      "transform",
+      `translate(${this.x},${this.y})`
+    );
+  }
+
+  svg(w, h) {
+    var slider = d3
+      .sliderHorizontal()
+      .min(this.min)
+      .max(this.max)
+      .step(this.step)
+      .width(this.width)
+      .displayValue(true)
+      .on('onchange', (val) => {
+        this.v = val;
+        var svg = this.element.parentNode;
+        while (!svg.updateAll) svg = svg.parentNode;
+        svg.updateAll();
+      });
+    var svg = d3.create("svg:g")
+      .attr("id", this.id)
+      .attr("class", "slider")
+      .attr("transform", `translate(${this.x},${this.y})`);
+
+    this.element = svg.call(slider).node();
+    return this.element;
+  }
+}
+
+function slider(...args) {
+  return new Slider(...args);
 }
 
 class Unfold extends Point {
@@ -891,6 +1022,34 @@ class IsectLineCircle extends Calculated {
   }
 }
 
+class Interpolate extends Point {
+  constructor(f, ...args) {
+    super(0, 0, "computed")
+    this.f = f;
+    this.args = args;
+  }
+
+  evaluate() {
+    this.complete = Shape.all(...this.args);
+    let r = this.f(...this.args);
+    this.x = r.x;
+    this.y = r.y;
+    return this.complete;
+  }
+
+  flat() {
+    return [
+      ...this.args,
+      ...(this.complete ? [this] : [])
+    ];
+  }
+
+}
+
+function interpolate(...args) {
+  return new Interpolate(...args);
+}
+
 class Mirror extends Point {
   constructor(center, point, ...opts) {
     super(0, 0, "computed", ...opts);
@@ -1131,7 +1290,7 @@ function update(svg, width, height, root) {
       // Funny thing is, this needs to use the anonymous function
       // syntax to work. Lambdas do not seem to bind 'this'.
       (update) =>
-        update.each(function (d) {
+        update.each(function(d) {
           d.update(this);
         }),
       (exit) => exit.remove()
@@ -1141,7 +1300,7 @@ function update(svg, width, height, root) {
 function revealZoom() {
   let slides = document.querySelector(".reveal .slides");
   if (slides) {
-    let slideZoom = slides.style.zoom || 1;
+    let slideZoom = slides && slides.style && slides.style.zoom || 1;
     setZoom(slideZoom);
   }
 }
@@ -1174,7 +1333,7 @@ function renderSvg(element, width, height, root) {
     .append("svg")
     .attr("viewBox", `0 0 ${width} ${height}`)
     .attr("class", "geometry")
-    .on("mousemove", function (e) {
+    .on("mousemove", function(e) {
       // if (debug)   console.log("event", e.offsetX, e.offsetY); // log the mouse x,y position
       // if (debug)   console.log("event", e.clientX, e.clientY); // log the mouse x,y position
       // if (debug)   console.log("client", this.clientWidth, this.clientHeight);
@@ -1186,24 +1345,45 @@ function renderSvg(element, width, height, root) {
   let clientToBoxX, clientToBoxY;
   let svgElement = svg.node();
 
+  /*Update function for this SVG thing. Must be called for any event that changes something.*/
+
+  svgElement.updateAll = () => {
+    svg
+      .selectChildren("*[id]")
+      .data(flatten(root), (d) => d.id)
+      .join(
+        (enter) =>
+          enter.append((d) => {
+            return d.svg(width, height);
+          }),
+        // Funny thing is, this needs to use the anonymous function
+        // syntax to work. Lambdas do not seem to bind 'this'.
+        (update) =>
+          update.each(function(d) {
+            d.update(this);
+          }),
+        (exit) => exit.remove()
+      );
+  };
+
   let drag = d3
     .drag()
-    .on("start", function (event) {
+    .on("start", function(event) {
       clientToBoxX = svgElement.viewBox.baseVal.width / svgElement.clientWidth;
       clientToBoxY =
         svgElement.viewBox.baseVal.height / svgElement.clientHeight;
     })
-    .on("drag", function (event) {
+    .on("drag", function(event) {
       let clientX = event.sourceEvent.offsetX / zoom;
       let clientY = event.sourceEvent.offsetY / zoom;
       let x = clip(svgElement.clientWidth, clientX) * clientToBoxX;
       let y = clip(svgElement.clientHeight, clientY) * clientToBoxY;
       event.subject.move(x, y);
 
-      update(svg, width, height, root);
+      svgElement.updateAll(svg, width, height, root);
     });
 
-  update(svg, width, height, root);
+  svgElement.updateAll(svg, width, height, root);
 
   svg.selectChildren("*[id].handle").call(drag);
   svg.selectChildren("*[id].play").on("click", clicked);
@@ -1211,7 +1391,7 @@ function renderSvg(element, width, height, root) {
   function clicked(event, d) {
     if (event.defaultPrevented) return; // dragged
     d.click();
-    update(svg, width, height, root);
+    svgElement.updateAll(svg, width, height, root);
   }
 }
 
