@@ -40,6 +40,8 @@ export * from "./vec2.js";
 
 const debug = true;
 
+window.once = window.once || {}
+
 const defaults = {
   point: { r: 6, opts: [] }, // one of [, "drag", "computed"]
   line: {
@@ -1306,6 +1308,7 @@ function revealZoom() {
 }
 
 function withMathJax(action) {
+  
   // Retry until MathJax is loaded
   if (
     !window.MathJax ||

@@ -94,7 +94,7 @@ Caption: There will be caption!
 
 ##  {.right .fragment}
 
-![$\mathbf{d}_r=-\mathbf{d}_i+2(\mathbf{d}_i\cdot{\mathbf{n}})\mathbf{n}$](./unfold.js){.run
+![$\vc{d}_r=-\vc{d}_i+2(\vc{d}_i\cdot{\vc{n}})\vc{n}$](./unfold.js){.run
 width="100%"}
 
 ------------------------------------------------------------------------

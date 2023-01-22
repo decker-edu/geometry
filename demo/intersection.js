@@ -13,7 +13,7 @@ let intersection = new g.IsectLineCircle(
   g.circle(center, 200)
 );
 
-let math = String.raw`L_r = A\otimes \frac{L}{|\mathbf{p}-\mathbf{x}|^2}((\widehat{\mathbf{p}-\mathbf{x}})\cdot\mathbf{n})`;
+let math = String.raw`L_r = A\otimes \frac{L}{|\vc{p}-\vc{x}|^2}((\widehat{\vc{p}-\vc{x}})\cdot\vc{n})`;
 let swtch = g
   .swtch(
     intersection.p1,
