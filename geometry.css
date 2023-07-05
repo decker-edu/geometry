@@ -127,7 +127,7 @@ svg.geometry path.dim {
 }
 
 svg.geometry path.computed {
-  stroke: var(--accent0);
+  stroke: var(--accent3);
   stroke-width: calc(var(--stroke-width) * 1.5);
 }
 
