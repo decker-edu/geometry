@@ -1308,7 +1308,6 @@ function revealZoom() {
 }
 
 function withMathJax(action) {
-  
   // Retry until MathJax is loaded
   if (
     !window.MathJax ||
@@ -1321,7 +1320,7 @@ function withMathJax(action) {
     if (debug) console.log("geometry.js: MathJax is loaded.");
     // Delay rendering (of the math labels) until MathJax startup is really
     // finished
-    MathJax.startup.promise.then(action()).catch((err) => {
+    MathJax.startup.promise.then(action).catch((err) => {
       if (debug)
         console.log("geometry.js: withMathJax: action failed: " + err.message);
     });
